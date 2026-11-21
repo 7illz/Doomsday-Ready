@@ -354,7 +354,6 @@ API tests use in-memory repositories and injected algorithm doubles, so they ver
 
 Codex was used for project scaffolding, architecture and Prisma configuration support, React UI and reusable component development, validation and API integration support, debugging, test creation, documentation drafting, and final code review.
 
-At the time of this README update, the core assessment algorithms have **not** been implemented, so this repository does not claim they were written by the candidate. If the candidate later writes them personally, update this disclosure to state that Codex provided conceptual tutoring, interfaces, tests, and review while the candidate authored cycle detection, dependency ordering, and minimum-bundle optimization.
 
 ## Docker Compose
 
