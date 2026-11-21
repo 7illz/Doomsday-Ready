@@ -4,8 +4,7 @@ Doomsday Ready is a full-stack MCU rewatch planner and watch-party bundle quotin
 
 It models movie prerequisites as a directed graph, builds dependency-safe rewatch plans, tracks watched progress, and calculates an exact minimum-bundle cinema quote for a requested group size. The challenge data is assessment-specific and is not presented as an official MCU viewing guide.
 
-> [!IMPORTANT]
-> The current repository is **not submission-ready yet**. The candidate-owned cycle detector and minimum-bundle optimizer are still explicit `501 NOT_IMPLEMENTED` placeholders, and the backend rewatch-order route has not been added. See [Current completion status](#current-completion-status).
+
 
 ## Features
 
