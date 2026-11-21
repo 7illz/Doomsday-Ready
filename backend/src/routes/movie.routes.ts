@@ -8,6 +8,7 @@ export function createMovieRouter(movieService: MovieService) {
 
   router.post('/', controller.create);
   router.get('/', controller.list);
+  router.get('/:id/rewatch-order', controller.rewatchOrder);
   router.patch('/:id', controller.update);
 
   return router;

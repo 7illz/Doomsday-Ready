@@ -3,12 +3,32 @@ import { AppError } from '../errors/app-error.js';
 import type {
   MovieRecord,
   MovieRepository,
+  MovieSummary,
 } from '../repositories/movie.repository.js';
 import type {
   CreateMovieInput,
   UpdateMovieInput,
 } from '../validation/movie.schemas.js';
 import type { CircularDependencyDetector } from './circular-dependency-detector.js';
+import { getRewatchOrder } from './rewatch-order.js';
+
+export interface RewatchPlan {
+  target: MovieSummary;
+  orderedPrerequisites: MovieSummary[];
+  totalPrerequisiteCount: number;
+  watchedCount: number;
+  remainingRuntimeMinutes: number;
+}
+
+function toMovieSummary(movie: MovieRecord): MovieSummary {
+  return {
+    id: movie.id,
+    title: movie.title,
+    releaseYear: movie.releaseYear,
+    runtimeMinutes: movie.runtimeMinutes,
+    watched: movie.watched,
+  };
+}
 
 function isUniqueConstraintError(error: unknown): boolean {
   return (
@@ -27,6 +47,36 @@ export class MovieService {
 
   list(): Promise<MovieRecord[]> {
     return this.repository.findAll();
+  }
+
+  async getRewatchPlan(id: string): Promise<RewatchPlan> {
+    const movies = await this.repository.findAll();
+    const moviesById = new Map(movies.map((movie) => [movie.id, movie]));
+    const targetMovie = moviesById.get(id);
+    if (!targetMovie) {
+      throw new AppError(404, 'MOVIE_NOT_FOUND', 'Movie not found.');
+    }
+
+    const graph = new Map(
+      movies.map((movie) => [
+        movie.id,
+        movie.prerequisites.map((prerequisite) => prerequisite.id),
+      ]),
+    );
+    const orderedIds = getRewatchOrder(id, graph);
+    const orderedPrerequisites = orderedIds.map((movieId) =>
+      toMovieSummary(moviesById.get(movieId)!),
+    );
+
+    return {
+      target: toMovieSummary(targetMovie),
+      orderedPrerequisites,
+      totalPrerequisiteCount: orderedPrerequisites.length,
+      watchedCount: orderedPrerequisites.filter((movie) => movie.watched).length,
+      remainingRuntimeMinutes: orderedPrerequisites
+        .filter((movie) => !movie.watched)
+        .reduce((total, movie) => total + movie.runtimeMinutes, 0),
+    };
   }
 
   async create(input: CreateMovieInput): Promise<MovieRecord> {

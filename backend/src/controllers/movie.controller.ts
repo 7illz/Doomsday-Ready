@@ -25,5 +25,11 @@ export function createMovieController(movieService: MovieService) {
     response.status(200).json({ data: movie });
   };
 
-  return { create, list, update };
+  const rewatchOrder: RequestHandler = async (request, response) => {
+    const { id } = movieIdParamsSchema.parse(request.params);
+    const plan = await movieService.getRewatchPlan(id);
+    response.status(200).json({ data: plan });
+  };
+
+  return { create, list, update, rewatchOrder };
 }

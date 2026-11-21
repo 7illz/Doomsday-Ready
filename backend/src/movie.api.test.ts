@@ -158,6 +158,35 @@ describe('movies API', () => {
     expect(response.body.data[0]).toEqual(initialMovies[0]);
   });
 
+  it('returns a rewatch plan with watched progress and unwatched runtime', async () => {
+    await repository.update(IRON_MAN_ID, { watched: true });
+    await repository.update(AVENGERS_ID, { prerequisiteIds: [IRON_MAN_ID] });
+
+    const response = await request(app).get(
+      `/api/movies/${AVENGERS_ID}/rewatch-order`,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual({
+      target: toSummary(initialMovies[1]),
+      orderedPrerequisites: [
+        expect.objectContaining({ id: IRON_MAN_ID, watched: true }),
+      ],
+      totalPrerequisiteCount: 1,
+      watchedCount: 1,
+      remainingRuntimeMinutes: 0,
+    });
+  });
+
+  it('returns 404 for a nonexistent rewatch target', async () => {
+    const response = await request(app).get(
+      `/api/movies/${MISSING_ID}/rewatch-order`,
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.body.error.code).toBe('MOVIE_NOT_FOUND');
+  });
+
   it('updates watched status', async () => {
     const response = await request(app)
       .patch(`/api/movies/${IRON_MAN_ID}`)
